@@ -1,0 +1,33 @@
+---
+layout: ''
+---
+{%- assign TWILIO_ACCOUNT_SID = "" -%}
+{%- assign TWILIO_API_KEY_SID = "" -%}
+{%- assign TWILIO_API_KEY_SECRET = "" -%}
+
+{%- assign now_timestamp = 'now' | date: '%s' -%}
+{%- assign exp_timestamp = 'now' | add_to_time: 1 | date: '%s' -%}
+{%- assign identity = context.params.identity -%}
+{%- assign room = context.params.roomName -%}
+
+{%- parse_json payload -%}
+{
+  "jti": "{{ TWILIO_API_KEY_SID }}-{{ now_timestamp }}",
+  "iss": "{{ TWILIO_API_KEY_SID }}",
+  "sub": "{{ TWILIO_ACCOUNT_SID }}",
+  "nbf": {{ now_timestamp }},
+  "exp": {{ exp_timestamp }},
+  "grants": {
+    "identity": "{{ identity }}",
+    "video": {
+        "room": "{{ room }}"
+    }
+  }
+}
+{%- endparse_json -%}
+{%- parse_json headers -%}
+{
+  "cty": "twilio-fpa;v=1"
+}
+{%- endparse_json -%}
+{{- payload | jwt_encode: 'HS256', TWILIO_API_KEY_SECRET, headers -}}
